@@ -1,0 +1,65 @@
+#cloud-config
+autoinstall:
+  version: 1
+  locale: en_US.UTF-8
+  identity:
+    hostname: ubuntu-pxe
+    username: ubuntu
+    password: '$y$j9T$LAaq.O3586l18ThIMEnWb/$aHmojZf6dhXlThtKjNDSgeT3JK7DtEwlqvhAup2TZY6'  # this hash represents the password 'ubuntu'
+  keyboard:
+    layout: us
+    variant: ""
+  network:
+    network:
+      version: 2
+      ethernets:
+        # adjust NIC name if needed, might also be ens3, enp1s0 or eth0
+        eno1:
+          dhcp4: true
+          #dhcp4: false
+          #addresses:
+          #  - 192.168.30.11/24
+          #gateway4: 192.168.30.1
+          #nameservers:
+          #  addresses:
+          #    - 192.168.30.1
+  proxy: ""
+  apt:
+    primary:
+      - arches: [amd64]
+        uri: http://archive.ubuntu.com/ubuntu
+  ssh:
+    install-server: true
+    authorized-keys:
+      - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBjAQjeTBR/st2P3nU4Y1J7n6oaylk3AFptNaBY31LUh
+    allow-pw: false
+  user-data:
+    users:
+      - name: ubuntu
+        gecos: "default user"
+        shell: /bin/bash
+        sudo: ALL=(ALL) NOPASSWD:ALL
+        groups: [adm, sudo]
+        lock_passwd: false
+        ssh_authorized_keys:
+          - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBjAQjeTBR/st2P3nU4Y1J7n6oaylk3AFptNaBY31LUh"
+      - name: root
+        lock_passwd: false
+        ssh_authorized_keys:
+          - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBjAQjeTBR/st2P3nU4Y1J7n6oaylk3AFptNaBY31LUh"
+  storage:
+    layout:
+      name: lvm
+      match:
+        size: largest
+      wipe: superblock-recursive
+  # change the boot order only for this reboot to boot directly into disk instead of booting via PXE again
+  late-commands:
+    - curtin in-target --target=/target -- bash -c '
+        if test -d /sys/firmware/efi; then
+          bootnum=$(efibootmgr | awk "/ubuntu/{print substr(\$1,5,4)}" | head -n1);
+          if test -n "${bootnum}"; then
+            efibootmgr --bootnext "${bootnum}";
+          fi;
+        fi
+      '

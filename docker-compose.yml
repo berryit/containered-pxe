@@ -1,0 +1,19 @@
+---
+services:
+  containered-pxe:
+    image: ghcr.io/berryit/conatinered-pxe:latest
+    container_name: conatinered-pxe
+    privileged: true
+    network_mode: host
+    environment:
+      NGINX_PORT: 4480
+    # ports are not needed when running in network_mode: host
+    #ports:
+    #  - "69:69/udp"
+    #  - "4480:4480"
+    volumes:
+      - ./pxe_images:/pxe_images
+      - ./pxe_configs:/pxe_configs
+      # optionally provide your own nginx config
+      #- ./nginx_config:/nginx_config
+    restart: unless-stopped

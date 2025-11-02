@@ -1,0 +1,57 @@
+#!ipxe
+
+##########################################
+#
+# Automated Ubuntu 24.04 LTS Autoinstall
+#
+##########################################
+
+##########################################
+# General settings
+##########################################
+# Timeout before boot (seconds)
+set timeout 2
+
+# IP of your pxe host
+set srv_ip 192.168.30.10:4480
+
+##########################################
+# Autoinstall settings
+##########################################
+# Get MAC address (and format it to lowercase without dashes, e.g. e8ff1ede7ea0)
+set mac_raw ${net0/mac:hexraw}
+
+# Autoinstall configuration URL
+set autoinstall_url http://${srv_ip}/autoinstall/
+#set autoinstall_url http://${srv_ip}/autoinstall/${mac_raw}/
+
+##########################################
+# Distribution details
+##########################################
+set os_arch amd64
+set codename noble
+set version_number 24.04.3
+set kernel_url http://releases.ubuntu.com/${codename}/netboot/${os_arch}
+set iso_url http://releases.ubuntu.com/${codename}/ubuntu-${version_number}-live-server-${os_arch}.iso
+set install_params autoinstall ds=nocloud-net;s=${autoinstall_url}
+set netboot_params ip=dhcp url=${iso_url}
+
+##########################################
+# Debug messages
+##########################################
+echo
+echo Booting automated Ubuntu 24.04 LTS installer...
+echo MAC:             ${mac_raw}
+echo Server IP:       ${srv_ip}
+echo Autoinstall URL: ${autoinstall_url}
+echo Live endpoint:   ${live_endpoint}
+echo Kernel URL:      ${kernel_url}
+sleep ${timeout}
+
+##########################################
+# Boot
+##########################################
+imgfree
+kernel ${kernel_url}/linux root=/dev/ram0 ramdisk_size=3500000 cloud-config-url=/dev/null ${netboot_params} ${install_params} initrd=initrd.magic ${cmdline}
+initrd ${kernel_url}/initrd
+boot
