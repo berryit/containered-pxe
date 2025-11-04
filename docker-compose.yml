@@ -1,7 +1,7 @@
 ---
 services:
   containered-pxe:
-    image: ghcr.io/berryit/conatinered-pxe:latest
+    image: ghcr.io/berryit/containered-pxe:latest
     container_name: conatinered-pxe
     privileged: true
     network_mode: host
